@@ -4,21 +4,86 @@
     <meta charset="UTF-8" />
     <title>Add New Laptop</title>
     <style>
-      html, body { font-family: Arial, Helvetica, sans-serif; }
+      html,
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
 
-      input, select, textarea, button, label, table, th, td, h1, h2, h3, p { font-family: inherit; }
-      ::placeholder { font-family: inherit; }
+      input,
+      select,
+      textarea,
+      button,
+      label,
+      table,
+      th,
+      td,
+      h1,
+      h2,
+      h3,
+      p {
+        font-family: inherit;
+      }
+      ::placeholder {
+        font-family: inherit;
+      }
 
-      form { width: 60%; margin: auto; display: flex; flex-direction: column; gap: 12px; }
-      input, select { padding: 8px; font-size: 14px; }
-      button#submit { padding: 10px; background-color: #333; color: white; border: 5px solid #333; cursor: pointer; }
-      button#dateButton { background-color: #e7e7e7; color: #333; }
-      h2 { text-align: center; }
+      form {
+        width: 60%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      input,
+      select {
+        padding: 8px;
+        font-size: 14px;
+      }
+      button#submit {
+        padding: 10px;
+        background-color: #333;
+        color: white;
+        border: 5px solid #333;
+        cursor: pointer;
+      }
+      button#dateButton {
+        background-color: #e7e7e7;
+        color: #333;
+      }
+      h2 {
+        text-align: center;
+      }
+
+      :root {
+        --app-font: Arial, Helvetica, sans-serif;
+      }
+      html,
+      body {
+        font-family: var(--app-font);
+      }
+      *,
+      *::before,
+      *::after {
+        font-family: inherit;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      ::placeholder {
+        font-family: inherit;
+      }
     </style>
   </head>
   <body>
     <h2>Add a New Laptop</h2>
-    <button id="backButton" onclick="location.href='webSite.html'">Back To Home</button>
+    <button id="backButton" onclick="location.href='webSite.html'">
+      Back To Home
+    </button>
 
     <form id="laptopForm">
       <input name="procured" placeholder="Procured Date" />
@@ -33,8 +98,15 @@
       <input name="userID" placeholder="User ID" />
       <input name="anyDesk" type="number" placeholder="AnyDesk ID" />
       <input name="r3thaVersion" placeholder="R3THA Version" />
-      <input name="lastUpdate" id="lastUpdate" type="date" placeholder="Last Update" />
-      <button type="button" id="dateButton" onclick="setTodayDate()">Set to Today</button>
+      <input
+        name="lastUpdate"
+        id="lastUpdate"
+        type="date"
+        placeholder="Last Update"
+      />
+      <button type="button" id="dateButton" onclick="setTodayDate()">
+        Set to Today
+      </button>
 
       <select name="status">
         <option value="true">Available</option>
@@ -54,8 +126,11 @@
 
       // Build the detail URL (works on GitHub Pages repo path or localhost)
       function detailUrlFor(pcNumber) {
-        const base = location.origin + location.pathname.replace(/\/[^\/]*$/, '/');
-        return `${base}detailedView.html?pcNumber=${encodeURIComponent(pcNumber)}`;
+        const base =
+          location.origin + location.pathname.replace(/\/[^\/]*$/, "/");
+        return `${base}detailedView.html?pcNumber=${encodeURIComponent(
+          pcNumber
+        )}`;
       }
 
       // Generate QR PNG for the detail URL, auto-download, and open a preview window
@@ -66,7 +141,7 @@
             if (err) return reject(err);
 
             // auto-download
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = dataUrl;
             a.download = `LaptopQR_${pcNumber}.png`;
             document.body.appendChild(a);
@@ -75,9 +150,9 @@
 
             // optional preview window for print/save
             try {
-              const w = window.open('', '_blank');
+              const w = window.open("", "_blank");
               if (w && w.document) {
-                w.document.write('<title>QR Code</title>');
+                w.document.write("<title>QR Code</title>");
                 w.document.body.innerHTML = `
                   <div style="font-family:system-ui;padding:16px">
                     <h3 style="margin:0 0 8px 0">Laptop ${pcNumber}</h3>
@@ -93,48 +168,52 @@
         });
       }
 
-      document.getElementById("laptopForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
+      document
+        .getElementById("laptopForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
 
-        // Robust type conversion (keep nulls instead of NaN)
-        data.price   = data.price   ? parseFloat(data.price) : null;
-        data.anyDesk = data.anyDesk ? parseInt(data.anyDesk) : null;
-        data.status  = data.status === "true";
+          // Robust type conversion (keep nulls instead of NaN)
+          data.price = data.price ? parseFloat(data.price) : null;
+          data.anyDesk = data.anyDesk ? parseInt(data.anyDesk) : null;
+          data.status = data.status === "true";
 
-        const API_BASE = "https://inventoryapptest-production.up.railway.app";
+          const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
-        try {
-          const res = await fetch(`${API_BASE}/api/LapTop`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          });
-
-          if (!res.ok) {
-            const msg = await res.text().catch(() => "");
-            alert(msg || "Error adding laptop.");
-            return;
-          }
-
-          // Try to read created object; fall back to the submitted pcNumber
-          let createdPc = data.pcNumber;
           try {
-            const created = await res.json();
-            if (created && created.pcNumber) createdPc = created.pcNumber;
-          } catch (_) {}
+            const res = await fetch(`${API_BASE}/api/LapTop`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
 
-          // Generate + download QR for this laptop's detail page
-          await downloadQrForDetail(createdPc);
+            if (!res.ok) {
+              const msg = await res.text().catch(() => "");
+              alert(msg || "Error adding laptop.");
+              return;
+            }
 
-          // Optional: go straight to the detail page of the new laptop
-          location.href = `detailedView.html?pcNumber=${encodeURIComponent(createdPc)}`;
-        } catch (err) {
-          console.error("Fetch error:", err);
-          alert("Failed to connect to server.");
-        }
-      });
+            // Try to read created object; fall back to the submitted pcNumber
+            let createdPc = data.pcNumber;
+            try {
+              const created = await res.json();
+              if (created && created.pcNumber) createdPc = created.pcNumber;
+            } catch (_) {}
+
+            // Generate + download QR for this laptop's detail page
+            await downloadQrForDetail(createdPc);
+
+            // Optional: go straight to the detail page of the new laptop
+            location.href = `detailedView.html?pcNumber=${encodeURIComponent(
+              createdPc
+            )}`;
+          } catch (err) {
+            console.error("Fetch error:", err);
+            alert("Failed to connect to server.");
+          }
+        });
     </script>
   </body>
 </html>
