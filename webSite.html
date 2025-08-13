@@ -50,6 +50,29 @@
         padding: 5px;
         text-align: left;
       }
+      :root {
+        --app-font: Arial, Helvetica, sans-serif;
+      }
+      html,
+      body {
+        font-family: var(--app-font);
+      }
+      *,
+      *::before,
+      *::after {
+        font-family: inherit;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      ::placeholder {
+        font-family: inherit;
+      }
     </style>
   </head>
 
